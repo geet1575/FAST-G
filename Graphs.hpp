@@ -11,8 +11,6 @@ private:
         int label;
         std::vector<Node*> adjNodes;
 
-        // Constructor to initialize the node with a label
-        Node(int l) : label(l) {}
     };
 
     std::vector<Node*> nodes; // Vector to store the nodes of the graph
@@ -155,7 +153,8 @@ private:
         }
 
         // Create a new node and add it to the graph
-        Node* newNode = new Node(label);
+        Node* newNode = new Node;
+        newNode->label = label;
         nodes.push_back(newNode);
         return newNode;
     }
@@ -168,8 +167,6 @@ private:
         int label;
         std::vector<Node*> adjNodes;
 
-        // Constructor to initialize the node with a label
-        Node(int l) : label(l) {}
     };
 
     std::vector<Node*> nodes; // Vector to store the nodes of the graph
@@ -308,7 +305,8 @@ private:
         }
 
         // Create a new node and add it to the graph
-        Node* newNode = new Node(label);
+        Node* newNode = new Node;
+        newNode->label = label;
         nodes.push_back(newNode);
         return newNode;
     }
