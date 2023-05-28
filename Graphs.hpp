@@ -33,8 +33,12 @@ public:
         Node* fromNode = findOrCreateNode(fromNodeLabel);
         Node* toNode = findOrCreateNode(toNodeLabel);
 
+        if (!fromNode || !toNode) {
+            return; // Check if nodes are valid
+        }
+
         fromNode->adjNodes.push_back(toNode);
-    }
+}
 
     // Function to add a node to the graph
     void addNode(int label) {
@@ -43,23 +47,20 @@ public:
 
     // Function to print the graph
     void printGraph() {
-        auto it = nodes.begin();
-        do {
-            std::cout << "Node " << (**it).label << " -> ";
-            auto itt = (*it)->adjNodes.begin();
-            do
-            {
-                std::cout << (*itt)->label << " ";
-                ++itt;
+        for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+            std::cout << "Node " << (*it)->label << " -> ";
+
+            if ((*it)->adjNodes.empty()) {
+                std::cout << "No adjacent nodes";
+            } else {
+                for (auto itt = (*it)->adjNodes.begin(); itt != (*it)->adjNodes.end(); ++itt) {
+                    std::cout << (*itt)->label << " ";
             }
-            while (itt != (*it)->adjNodes.end());
-            
-            std::cout << std::endl;
-            ++it;
         }
-        while (it != nodes.end());
-        
+
+        std::cout << std::endl;
     }
+}
 
     // Function to root the graph at a specific node
     void rootGraph(int rootLabel) {
@@ -71,13 +72,13 @@ public:
         if (*it == rootNode) {
             break;
         }
-    ++it;
-}
-
-        if (it != nodes.begin()) {
-            std::swap(*it, nodes[0]);
-        }
+        ++it; // Add this line to increment the iterator
     }
+
+    if (it != nodes.begin()) {
+        std::swap(*it, nodes[0]);
+    }
+}
 
     // Function to perform breadth-first search (BFS) traversal
     void breadthFirstSearch() {
@@ -194,13 +195,16 @@ public:
     }
 
     // Function to add an undirected edge between two nodes
-    void addEdge(int node1Label, int node2Label) {
-        Node* node1 = findOrCreateNode(node1Label);
-        Node* node2 = findOrCreateNode(node2Label);
+    void addEdge(int fromNodeLabel, int toNodeLabel) {
+        Node* fromNode = findOrCreateNode(fromNodeLabel);
+        Node* toNode = findOrCreateNode(toNodeLabel);
 
-        node1->adjNodes.push_back(node2);
-        node2->adjNodes.push_back(node1);
-    }
+        if (!fromNode || !toNode) {
+            return; // Check if nodes are valid
+        }
+
+    fromNode->adjNodes.push_back(toNode);
+}
 
     // Function to add a node to the graph
     void addNode(int label) {
@@ -209,14 +213,21 @@ public:
 
     // Function to print the graph
     void printGraph() {
-        for (auto it = nodes.begin();it != nodes.end();++it) {
+        for (auto it = nodes.begin(); it != nodes.end(); ++it) {
             std::cout << "Node " << (*it)->label << " -> ";
-            for (auto itt = (*it)->adjNodes.begin();itt != (*it)->adjNodes.end();++itt) {
-                std::cout << (*itt)->label << " ";
-            }
-            std::cout << std::endl;
+
+            if ((*it)->adjNodes.empty()) {
+                std::cout << "No adjacent nodes";
+            } else {
+                for (auto itt = (*it)->adjNodes.begin(); itt != (*it)->adjNodes.end(); ++itt) {
+                    std::cout << (*itt)->label << " ";
+                }
         }
+
+        std::cout << std::endl;
     }
+}
+
 
     // Function to root the graph at a specific node
     void rootGraph(int rootLabel) {
