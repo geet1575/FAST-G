@@ -21,9 +21,10 @@ public:
 
     // Destructor to deallocate memory
     ~DirectedGraph() {
-        for (auto& node : nodes) {
-            delete node;
-        }
+        for(auto it = nodes.begin(); it !=nodes.end();++it)
+            {
+                delete *it;
+            }
         nodes.clear();
     }
 
@@ -42,13 +43,22 @@ public:
 
     // Function to print the graph
     void printGraph() {
-        for (const auto& node : nodes) {
-            std::cout << "Node " << node->label << " -> ";
-            for (const auto& adjNode : node->adjNodes) {
-                std::cout << adjNode->label << " ";
+        auto it = nodes.begin();
+        do {
+            std::cout << "Node " << (**it).label << " -> ";
+            auto itt = (*it)->adjNodes.begin();
+            do
+            {
+                std::cout << (*itt)->label << " ";
+                ++itt;
             }
+            while (itt != (*it)->adjNodes.end());
+            
             std::cout << std::endl;
+            ++it;
         }
+        while (it != nodes.end());
+        
     }
 
     // Function to root the graph at a specific node
@@ -88,13 +98,13 @@ public:
             queue.pop();
 
             std::cout << currentNode->label << " ";
-
-            for (const auto& adjNode : currentNode->adjNodes) {
-                if (visited.find(adjNode) == visited.end()) {
-                    queue.push(adjNode);
-                    visited.insert(adjNode);
+            for(auto it = currentNode->adjNodes.begin(); it != currentNode->adjNodes.end();++it)
+                {
+                    if (visited.find(*it) == visited.end()) {
+                        queue.push(*it);
+                        visited.insert(*it);
+                    }
                 }
-            }
         }
 
         std::cout << std::endl;
@@ -119,13 +129,13 @@ public:
             stack.pop();
 
             std::cout << currentNode->label << " ";
-
-            for (const auto& adjNode : currentNode->adjNodes) {
-                if (visited.find(adjNode) == visited.end()) {
-                    stack.push(adjNode);
-                    visited.insert(adjNode);
+            for (auto it = currentNode->adjNodes.begin(); it != currentNode->adjNodes.end(); ++it)
+                {
+                    if (visited.find(*it) == visited.end()) {
+                        stack.push(*it);
+                        visited.insert(*it);
+                    }
                 }
-            }
         }
 
         std::cout << std::endl;
@@ -146,9 +156,9 @@ public:
 private:
     // Function to find an existing node or create a new node with the given label
     Node* findOrCreateNode(int label) {
-        for (const auto& node : nodes) {
-            if (node->label == label) {
-                return node;
+        for (auto it = nodes.begin(); it != nodes.end();++it) {
+            if ((*it)->label == label) {
+                return *it;
             }
         }
 
@@ -177,8 +187,8 @@ public:
 
     // Destructor to deallocate memory
     ~UndirectedGraph() {
-        for (auto& node : nodes) {
-            delete node;
+        for (auto it = nodes.begin(); it != nodes.end();++it) {
+            delete *it;
         }
         nodes.clear();
     }
@@ -199,10 +209,10 @@ public:
 
     // Function to print the graph
     void printGraph() {
-        for (const auto& node : nodes) {
-            std::cout << "Node " << node->label << " -> ";
-            for (const auto& adjNode : node->adjNodes) {
-                std::cout << adjNode->label << " ";
+        for (auto it = nodes.begin();it != nodes.end();++it) {
+            std::cout << "Node " << (*it)->label << " -> ";
+            for (auto itt = (*it)->adjNodes.begin();itt != (*it)->adjNodes.end();++itt) {
+                std::cout << (*itt)->label << " ";
             }
             std::cout << std::endl;
         }
@@ -242,12 +252,13 @@ public:
 
             std::cout << currentNode->label << " ";
 
-            for (const auto& adjNode : currentNode->adjNodes) {
-                if (visited.find(adjNode) == visited.end()) {
-                    queue.push(adjNode);
-                    visited.insert(adjNode);
+            for(auto it = currentNode->adjNodes.begin(); it != currentNode->adjNodes.end();++it)
+                {
+                    if (visited.find(*it) == visited.end()) {
+                        queue.push(*it);
+                        visited.insert(*it);
+                    }
                 }
-            }
         }
 
         std::cout << std::endl;
@@ -273,12 +284,13 @@ public:
 
             std::cout << currentNode->label << " ";
 
-            for (const auto& adjNode : currentNode->adjNodes) {
-                if (visited.find(adjNode) == visited.end()) {
-                    stack.push(adjNode);
-                    visited.insert(adjNode);
+            for (auto it = currentNode->adjNodes.begin(); it != currentNode->adjNodes.end(); ++it)
+                {
+                    if (visited.find(*it) == visited.end()) {
+                        stack.push(*it);
+                        visited.insert(*it);
+                    }
                 }
-            }
         }
 
         std::cout << std::endl;
@@ -298,9 +310,9 @@ public:
 private:
     // Function to find an existing node or create a new node with the given label
     Node* findOrCreateNode(int label) {
-        for (const auto& node : nodes) {
-            if (node->label == label) {
-                return node;
+        for (auto it = nodes.begin(); it != nodes.end();++it) {
+            if ((*it)->label == label) {
+                return *it;
             }
         }
 
