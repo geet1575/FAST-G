@@ -38,6 +38,7 @@ public:
         }
 
         fromNode->adjNodes.push_back(toNode);
+        toNode->adjNodes.push_back(fromNode);
 }
 
     // Function to add a node to the graph
