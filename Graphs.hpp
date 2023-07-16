@@ -13,7 +13,7 @@ private:
 
     };
 
-    std::vector<Node*> nodes; // Vector to store the nodes of the graph
+    std::vector<Node*> nodes; // Vector to store the pointers to nodes of the graph
 
 public:
     // Constructor
@@ -38,12 +38,39 @@ public:
         }
 
         fromNode->adjNodes.push_back(toNode);
-        toNode->adjNodes.push_back(fromNode);
 }
 
     // Function to add a node to the graph
     void addNode(int label) {
         findOrCreateNode(label);
+    }
+
+    void InputdirectedGraph(){
+        std::cout<<"Enter the number of nodes in the graph";
+        int n;
+        std::cin>>n;
+        while(n--){
+            std::cout<<"Enter the label of the next node";
+            int label;
+            std::cin>>label;
+            Node* newNode = findOrCreateNode(label);
+            bool  flag = true; // flag specifies whether user wants to keep adding edges
+            while(flag){
+                std::cout<<"Do you want to add another edge ?"<<std::endl;
+                std::cout<<"Enter 1 if you do";
+                int f;
+                std::cin>>f;
+                if(f!=1){ 
+                    flag = false;
+                }
+                else{
+                    std::cout<<"Enter the label of the node which is adjacent to "<<label<<std::endl;
+                    int adjlabel;
+                    std::cin>>adjlabel;
+                    addEdge(label,adjlabel);
+                    }
+                } 
+        }
     }
 
     // Function to print the graph
@@ -205,6 +232,7 @@ public:
         }
 
     fromNode->adjNodes.push_back(toNode);
+    toNode->adjNodes.push_back(fromNode);
 }
 
     // Function to add a node to the graph
@@ -343,15 +371,17 @@ int main() {
     directedGraph.addNode(3);
     directedGraph.addEdge(1, 2);
     directedGraph.addEdge(2, 3);
+    // directedGraph.addEdge(3,1);
 
     std::cout << "Directed Graph:" << std::endl;
     directedGraph.printGraph();
-
+    // directedGraph.rootGraph(3);
     std::cout << "Depth-First Search: ";
     directedGraph.depthFirstSearch();
 
     std::cout << "Breadth-First Search: ";
     directedGraph.breadthFirstSearch();
+    directedGraph.~DirectedGraph();
 
     std::cout << std::endl;
 
@@ -370,6 +400,7 @@ int main() {
 
     std::cout << "Breadth-First Search: ";
     undirectedGraph.breadthFirstSearch();
+    undirectedGraph.~UndirectedGraph();
 
     return 0;
 }

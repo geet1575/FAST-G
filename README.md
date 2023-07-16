@@ -2,7 +2,7 @@
 This library contains implementations of various Graph Optimization and Search algorithms in C++. This project is under the Seasons of Code Initiative by the Web n Coding Club, IIT Bombay.
 
 # STUFF THAT IS COMPLETED
-Created a graph base class and implemented BFS and DFS on it
+The files named 'Graphs' (and their various extensions) contain all the basic implementations of graphs 
 
 # TO DO 
 To implement MST algorithms, Djikastra's etc.
