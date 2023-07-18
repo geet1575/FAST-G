@@ -39,7 +39,11 @@ int main() {
     // std::cout << "Breadth-First Search: ";
     // undirectedGraph.breadthFirstSearch();
     // undirectedGraph.~UndirectedGraph();
-    DirectedGraph directedgraph;
-    directedgraph.InputDirectedGraph();
+    // DirectedGraph directedgraph;
+    // directedgraph.InputDirectedGraph();
+
+    DirectedWeightedGraph directedweightedgraph;
+    directedweightedgraph.InputDirectedGraph();
+    directedweightedgraph.Dijkstra();
     return 0;
 }

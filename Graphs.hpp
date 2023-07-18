@@ -3,6 +3,10 @@
 #include <queue>
 #include <stack>
 #include <unordered_set>
+#include <unordered_map>
+#include <limits>
+
+
 class DirectedGraph {
 private:
     // Structure representing a node in the directed graph
@@ -572,6 +576,9 @@ public:
                 std::cout<<std::endl<<"This node already exists"<<std::endl;
                 n++;
             }
+            else{
+                addNode(label);
+            }
             }
 
         }
@@ -696,7 +703,7 @@ public:
         std::cout << std::endl;
     }
 
-        // Function to perform BFS given the start node
+    // Function to perform BFS given the start node
     void breadthFirstSearch(int StartNodelabel){
         rootGraph(StartNodelabel);
         breadthFirstSearch();
@@ -708,6 +715,92 @@ public:
         depthFirstSearch();
     }    
 
+    // Function to perform Dijkstra's algorithm 
+    void Dijkstra(){
+        std::unordered_map<int , int> result; // This unordered map stores the mapping of every node's label with the shortest distance from the start node
+        std::unordered_set<Node* > visitedNodes; // Set to track visited nodes 
+        std::priority_queue<std::pair<int, Node*>, std::vector<std::pair<int, Node*>>, std::greater<std::pair<int, Node*>>> pq; // Priority queue to store nodes based on their distances
+
+        
+        // The skeleton of this function is somewhat similar to the one for breadthFirstSearch
+        Node* StartNode = nodes[0];
+        result[StartNode->label] = 0; // Distance of start node to itself is 0
+        pq.push(std::make_pair(0, StartNode));
+
+        while(!pq.empty()){
+            Node* current = pq.top().second;
+            int currentDistance = pq.top().first;
+            pq.pop();
+            if(visitedNodes.find(current) !=visitedNodes.end()){
+                continue;
+            }
+            visitedNodes.insert(current);
+            for (int i = 0; i < current->adjNodes.first.size(); i++) {
+                Node* neighbor = current->adjNodes.first[i];
+                int weight = current->adjNodes.second[i];
+                int newDistance = currentDistance + weight;
+                if (result.find(neighbor->label) == result.end() || newDistance < result[neighbor->label]) {
+                    result[neighbor->label] = newDistance;
+                    pq.push(std::make_pair(newDistance, neighbor));
+                }
+
+            }
+        }
+        std::cout<<"Shortest distance from " << StartNode->label<<" :"<<std::endl;
+        for(const auto& pair : result){
+            std::cout<<"Node "<<pair.first<<" : "<< pair.second<<std::endl;
+        }
+    }
+
+    void ShortestDistance(int fromlabel, int tolabel){
+        // We use Djikstra's algorithm directly (by copying the code (since Djikstra() does not return anything))
+        std::unordered_map<int , int> result; // This unordered map stores the mapping of every node's label with the shortest distance from the start node
+        std::unordered_set<Node* > visitedNodes; // Set to track visited nodes 
+        std::priority_queue<std::pair<int, Node*>, std::vector<std::pair<int, Node*>>, std::greater<std::pair<int, Node*>>> pq; // Priority queue to store nodes based on their distances
+
+        rootGraph(fromlabel);
+        // The skeleton of this function is somewhat similar to the one for breadthFirstSearch
+        Node* StartNode = nodes[0];
+        result[StartNode->label] = 0; // Distance of start node to itself is 0
+        pq.push(std::make_pair(0, StartNode));
+
+        while(!pq.empty()){
+            Node* current = pq.top().second;
+            int currentDistance = pq.top().first;
+            pq.pop();
+            if(visitedNodes.find(current) !=visitedNodes.end()){
+                continue;
+            }
+            visitedNodes.insert(current);
+            for (int i = 0; i < current->adjNodes.first.size(); i++) {
+                Node* neighbor = current->adjNodes.first[i];
+                int weight = current->adjNodes.second[i];
+                int newDistance = currentDistance + weight;
+                if (result.find(neighbor->label) == result.end() || newDistance < result[neighbor->label]) {
+                    result[neighbor->label] = newDistance;
+                    pq.push(std::make_pair(newDistance, neighbor));
+                }
+
+            }
+        }
+        bool Exists = false; // To see whether there even is a path from (fromlabel to tolabel)
+        for(const auto& pair : result){
+            if(pair.first == tolabel){
+                std::cout<<pair.second<<std::endl;
+                Exists = true;
+            }
+        }
+        if(!Exists){
+            std::cout<<"There is no available path, hence the shortest distance is undefined"<<std::endl;
+        }
+
+    }
+
+    // Function to perform Dijkstra's algorithm given the start node 
+    void Dijkstra(int StartNodeLabel){
+        rootGraph(StartNodeLabel);
+        Dijkstra();
+    }
 private:
     // Function to find an existing node or create a new node with the given label
     Node* findOrCreateNode(int label) {
@@ -736,6 +829,26 @@ private:
         return false;
     }
 
+    // Function to return the weight of an edge 
+    int ReturnWeight(int FromLabel, int ToLabel){
+        Node* StartNode = findOrCreateNode(FromLabel);
+        Node* EndNode = findOrCreateNode(ToLabel);
+        if(!StartNode || !EndNode){
+            return 0;
+        }
+        else if(StartNode->adjNodes.first.empty()){
+            return 0;
+        }
+        else{
+            auto it2 = StartNode->adjNodes.second.begin();
+            for(auto it = StartNode->adjNodes.first.begin(); it != StartNode->adjNodes.first.end();++it,++it2){
+                if((*it)->label == ToLabel){
+                    return *it2;
+                }
+
+            }
+        }
+    }
 
 };
 
@@ -858,7 +971,7 @@ public:
                 if(!NodeExist(fromlabel) || !NodeExist(tolabel)){
                     std::cout<<std::endl<<" Invalid input"<<std::endl;
                 }
-                else if(EdgeExist(fromlabel,tolabel)){
+                else if(EdgeExist(fromlabel,tolabel,weight)){
                     std::cout<<std::endl<<" This edge already exists"<<std::endl;
                 }
                 else if(fromlabel == tolabel){
@@ -981,7 +1094,7 @@ public:
     void depthFirstSearch(int StartNodelabel){
         rootGraph(StartNodelabel);
         depthFirstSearch();
-    }    
+    }
 private:
     // Function to find an existing node or create a new node with the given label
     Node* findOrCreateNode(int label) {
@@ -1009,16 +1122,17 @@ private:
         }
         return false;
     }
-    // Function to find whether an edge already exists (for the inputsimpleundirectedgraph)
-    bool EdgeExist(int fromlabel, int tolabel){ 
+    // Function to find whether an edge already exists (with the same weight) (for the inputsimpleundirectedgraph)
+    bool EdgeExist(int fromlabel, int tolabel ,int weight){ 
         Node* node1 = findOrCreateNode(fromlabel);
         Node* node2 = findOrCreateNode(tolabel);
         if(node1->adjNodes.first.empty()){
             return false;
         }
         else{
-            for(auto it = node1->adjNodes.first.begin();it != node1->adjNodes.first.end();++it){
-                if((*it)->label == tolabel){
+            auto it2 = node1->adjNodes.second.begin();
+            for(auto it = node1->adjNodes.first.begin();it != node1->adjNodes.first.end();++it,++it2){
+                if((*it)->label == tolabel && *it2 == weight){
                     return true;
                 }
             }
