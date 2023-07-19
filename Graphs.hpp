@@ -5,6 +5,8 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <limits>
+#include <climits> // For INT_MAX
+
 
 
 class DirectedGraph {
@@ -64,6 +66,9 @@ public:
             if(NodeExist(label)){
                 std::cout<<std::endl<<"This node already exists"<<std::endl;
                 n++;
+            }
+            else{
+                addNode(label);
             }
             }
 
@@ -288,6 +293,9 @@ public:
                 std::cout<<std::endl<<"This node already exists"<<std::endl;
                 n++;
             }
+            else{
+                addNode(label);
+            }
             }
 
         }
@@ -329,6 +337,9 @@ public:
             if(NodeExist(label)){
                 std::cout<<std::endl<<"This node already exists"<<std::endl;
                 n++;
+            }
+            else{
+                addNode(label);
             }
             }
 
@@ -523,6 +534,9 @@ private:
     struct Node {
         int label;
         std::pair<std::vector<Node*>,std::vector<int>> adjNodes; // Each weight corresponds with its particular adjacent Nodes
+        std::vector<int> residualCapacity;
+
+        // Node(int lbl) : label(lbl) {} // A constructor for future use
 
     };
 
@@ -552,7 +566,10 @@ public:
 
         fromNode->adjNodes.first.push_back(toNode);
         fromNode->adjNodes.second.push_back(weight);
-}
+        fromNode->residualCapacity.push_back(weight);
+
+    
+    }
 
     // Function to add a node to the graph
     void addNode(int label) {
@@ -639,7 +656,31 @@ public:
     if (it != nodes.begin()) {
         std::swap(*it, nodes[0]);
     }
-}
+    }
+    int findMaxFlow(int sourceLabel, int sinkLabel) {
+        Node* source = findOrCreateNode(sourceLabel);
+        Node* sink = findOrCreateNode(sinkLabel);
+
+        if (!source || !sink) {
+            std::cout << "Invalid source or sink node." << std::endl;
+            return 0;
+        }
+
+        int maxFlow = 0;
+
+        while (bfs(source, sink)) {
+            std::vector<int> parent(nodes.size(), -1);
+            int pathFlow = INT_MAX;
+
+            // Find the minimum residual capacity along the augmenting path
+            for (Node* v = sink; v != source; v = findOrCreateNode(parent[v->label])) {
+                Node* u =findOrCreateNode( parent[v->label]);
+                int capacity = getResidualCapacity(u, v);
+                pathFlow = std::min(pathFlow, capacity);
+            }
+
+        }
+    }
 
     // Function to perform breadth-first search (BFS) traversal
     void breadthFirstSearch() {
@@ -752,7 +793,7 @@ public:
         }
     }
 
-    void ShortestDistance(int fromlabel, int tolabel){
+    void ShortestDistance(int fromlabel, int tolabel){ // Also called APSP
         // We use Djikstra's algorithm directly (by copying the code (since Djikstra() does not return anything))
         std::unordered_map<int , int> result; // This unordered map stores the mapping of every node's label with the shortest distance from the start node
         std::unordered_set<Node* > visitedNodes; // Set to track visited nodes 
@@ -794,6 +835,10 @@ public:
             std::cout<<"There is no available path, hence the shortest distance is undefined"<<std::endl;
         }
 
+    }
+
+    void APSP(int fromlabel, int tolabel){
+        ShortestDistance(fromlabel,tolabel); // Defined an alias for ShortestDistance that may be more popular
     }
 
     // Function to perform Dijkstra's algorithm given the start node 
@@ -849,6 +894,54 @@ private:
             }
         }
     }
+    bool bfs(Node* source, Node* sink) {
+        std::vector<bool> visited(nodes.size(), false);
+        std::vector<Node*> parent(nodes.size(), nullptr);
+
+        std::queue<Node*> queue;
+        queue.push(source);
+        visited[source->label] = true;
+
+        while (!queue.empty()) {
+            Node* current = queue.front();
+            queue.pop();
+
+            for (int i = 0; i < current->adjNodes.first.size(); i++) {
+                Node* neighbor = current->adjNodes.first[i];
+
+                if (!visited[neighbor->label] && getResidualCapacity(current, neighbor) > 0) {
+                    queue.push(neighbor);
+                    visited[neighbor->label] = true;
+                    parent[neighbor->label] = current;
+                }
+            }
+        }
+
+        return visited[sink->label];
+    }
+
+    int getResidualCapacity(Node* u, Node* v) {
+        int index = -1;
+        for (int i = 0; i < u->adjNodes.first.size(); i++) {
+            if (u->adjNodes.first[i] == v) {
+                index = i;
+                break;
+            }
+        }
+        return u->residualCapacity[index];
+    }
+
+    void updateResidualCapacity(Node* u, Node* v, int flow) {
+        int index = -1;
+        for (int i = 0; i < u->adjNodes.first.size(); i++) {
+            if (u->adjNodes.first[i] == v) {
+                index = i;
+                break;
+            }
+        }
+        u->residualCapacity[index] -= flow;
+    }
+
 
 };
 
@@ -858,14 +951,31 @@ private:
     struct Node {
         int label;
         std::pair<std::vector<Node*>,std::vector<int>> adjNodes;
+        int setIndex;  // Index to track the set that the node belongs to in the disjoint set data structure (For Kruskal)
+
 
     };
 
+    struct Edge{
+        int label1, label2, weight;
+    };
+
     std::vector<Node*> nodes; // Vector to store the nodes of the graph
+    std::unordered_set<Edge> edges; // Set to store the edges of the graph
+                                    // NOTE that this is exclusively for Kruskal's algorithm
+    std::vector<Edge> SortedEdges; // For the Sort Edges algorithm (This is unsorted until you perform the SortEdges function)
+    std::vector<int> parent;  // Parent array to store the parent (representative) of each element
+    std::vector<int> rank;  // Rank array to store the rank of each set
+
+    
+    
 
 public:
     // Constructor
     UndirectedWeightedGraph() = default;
+    // UndirectedWeightedGraph() {
+    //     MakeSet();
+    // }
 
     // Destructor to deallocate memory
     ~UndirectedWeightedGraph() {
@@ -874,6 +984,43 @@ public:
         }
         nodes.clear();
     }
+
+    // // Function to initialize the disjoint set data structure
+    // void MakeSet() {
+    //     parent.clear();
+    //     rank.clear();
+    // }
+    // THis whole section wasn't working
+
+    // Find the representative (root) of the set that the given element belongs to
+    int findSet(int x) {
+        if (x != parent[x]) {
+            parent[x] = findSet(parent[x]);  // Path compression optimization
+        }
+        return parent[x];
+    }
+
+    // Merge the sets that contain elements x and y
+    void unionSets(int x, int y) {
+        int xRoot = findSet(x);
+        int yRoot = findSet(y);
+
+        if (xRoot == yRoot) {
+            return;  // Elements already belong to the same set
+        }
+
+        // Perform union by rank to optimize the tree height
+        if (rank[xRoot] < rank[yRoot]) {
+            parent[xRoot] = yRoot;
+        } else if (rank[xRoot] > rank[yRoot]) {
+            parent[yRoot] = xRoot;
+        } else {
+            parent[yRoot] = xRoot;
+            rank[xRoot]++;
+        }
+    }
+
+
 
     // Function to add an undirected edge between two nodes
     void addEdge(int fromNodeLabel, int toNodeLabel, int weight) {
@@ -884,16 +1031,39 @@ public:
             return; // Check if nodes are valid
         }
 
-    fromNode->adjNodes.first.push_back(toNode);
-    fromNode->adjNodes.second.push_back(weight);
-    toNode->adjNodes.first.push_back(fromNode);
-    toNode->adjNodes.second.push_back(weight);
+        fromNode->adjNodes.first.push_back(toNode);
+        fromNode->adjNodes.second.push_back(weight);
+        toNode->adjNodes.first.push_back(fromNode);
+        toNode->adjNodes.second.push_back(weight);
+        Edge edge ;
+        edge.label1 = fromNodeLabel;
+        edge.label2 = toNodeLabel;
+        edge.weight =weight;
+        edges.insert(edge);
+        SortedEdges.push_back(edge);
+        // Update parent and rank vectors
+        int fromIndex = fromNode->setIndex;
+        int toIndex = toNode->setIndex;
+        parent[fromIndex] = fromIndex;
+        parent[toIndex] = toIndex;
+        rank[fromIndex] = 0;
+        rank[toIndex] = 0;
 
 }
 
     // Function to add a node to the graph
     void addNode(int label) {
         findOrCreateNode(label);
+        // Update parent and rank vectors
+        int numNodes = nodes.size();
+        parent.resize(numNodes);
+        rank.resize(numNodes);
+        for (int i = 0; i < numNodes; ++i) {
+            parent[i] = i;
+            rank[i] = 0;
+            nodes[i]->setIndex = i;
+        }
+
     }
     // Function to input an undirected graph
     void InputUndirectedGraph(){
@@ -912,6 +1082,9 @@ public:
             if(NodeExist(label)){
                 std::cout<<std::endl<<"This node already exists"<<std::endl;
                 n++;
+            }
+            else{
+                addNode(label);
             }
             }
 
@@ -955,6 +1128,9 @@ public:
             if(NodeExist(label)){
                 std::cout<<std::endl<<"This node already exists"<<std::endl;
                 n++;
+            }
+            else{
+                addNode(label);
             }
             }
 
@@ -1052,6 +1228,11 @@ public:
         std::cout << std::endl;
     }
 
+    // Ford Fulkerson's algorithm
+    void FordFulkerson(){
+
+    } 
+
     // Function to perform depth-first search (DFS) traversal
     void depthFirstSearch() {
         if (nodes.empty()) {
@@ -1095,6 +1276,77 @@ public:
         rootGraph(StartNodelabel);
         depthFirstSearch();
     }
+    // Function to perform Merge sort on edges (A parameter that will have to be given is the number of edges)
+    void SortEdges(std::vector<Edge> &SortedEdges, int n){
+        std::vector<Edge> b1(n/2);
+        std::vector<Edge> b2(n-n/2);
+        for(int i = 0; i<n/2;i++){
+            b1[i] = SortedEdges[i];
+        }
+        for(int i = n/2;i<n;i++){
+            b2[i-n/2] = SortedEdges[i];
+        }
+        SortEdges(b1,n/2);
+        SortEdges(b2,n-n/2);
+        merge(SortedEdges,b1,b2,n/2,n-n/2);
+    }
+
+    void merge(std::vector<Edge> & A, std::vector<Edge>& B1, std::vector<Edge>& B2, int n1,int n2){
+       int cB1, cB2, cA; cB1 = cB2 = cA = 0; // counters for B1,B2,A respectively
+        while (cB1 < n1 && cB2 < n2){
+	        // copy an element from B1 to A as B1 has the smaller element
+	        if (B1[cB1].weight < B2[cB2].weight) A[cA++] = B1[cB1++]; 
+	        // copy an element from B2 to A as B2 has the smaller element
+	        else if (B1[cB1].weight > B2[cB2].weight) A[cA++] = B2[cB2++];
+	        // both have equal-valued elements, copy from both to A
+	    else { A[cA++] = B1[cB1++]; A[cA++] = B2[cB2++];} 
+        }
+        // copy the remaining elements from  either B1 or B2 to A
+        while(cB1 < n1) A[cA++] = B1[cB1++];
+        while(cB2 < n2) A[cA++] = B2[cB2++];
+ 
+    }
+
+    // Kruskal's algorithm
+    void Kruskal() {
+        int n = SortedEdges.size();
+        SortEdges(SortedEdges, n);
+
+        // Initialize the disjoint set data structure
+        parent.clear();
+        rank.clear();
+        int numNodes = nodes.size();
+        parent.resize(numNodes);
+        rank.resize(numNodes);
+
+
+        for (int i = 0; i < nodes.size(); ++i) {
+            parent.push_back(i);
+            rank.push_back(0);
+            nodes[i]->setIndex = i;  // Set the setIndex of each node to its index in the disjoint set data structure
+        }
+
+        std::unordered_set<Node*> mst;  // For the minimum spanning tree
+
+        for (const auto& edge : SortedEdges) {
+            int fromIndex = nodes[edge.label1]->setIndex;
+            int toIndex = nodes[edge.label2]->setIndex;
+
+            if (findSet(fromIndex) != findSet(toIndex)) {
+                mst.insert(nodes[edge.label1]);
+                mst.insert(nodes[edge.label2]);
+                unionSets(fromIndex, toIndex);
+            }
+        }
+
+        // Print the minimum spanning tree
+        std::cout << "Minimum Spanning Tree (MST): ";
+        for (const auto& node : mst) {
+            std::cout << node->label << " ";
+        }
+        std::cout << std::endl;
+    }
+
 private:
     // Function to find an existing node or create a new node with the given label
     Node* findOrCreateNode(int label) {
@@ -1107,6 +1359,7 @@ private:
         // Create a new node and add it to the graph
         Node* newNode = new Node;
         newNode->label = label;
+        newNode->setIndex = nodes.size();
         nodes.push_back(newNode);
         return newNode;
     }
@@ -1126,6 +1379,9 @@ private:
     bool EdgeExist(int fromlabel, int tolabel ,int weight){ 
         Node* node1 = findOrCreateNode(fromlabel);
         Node* node2 = findOrCreateNode(tolabel);
+        if(!node1 || !node2){
+            return false;
+        }
         if(node1->adjNodes.first.empty()){
             return false;
         }
@@ -1138,5 +1394,22 @@ private:
             }
             return false;
         }
+    }
+    // Function to return an edge that has the specifications (We assume that the edge has to exist)
+    Edge findEdge(int fromlabel, int tolabel, int weight){
+        Node* node1 = findOrCreateNode(fromlabel);
+        Node* node2 = findOrCreateNode(tolabel);
+        auto it2 = node1->adjNodes.second.begin();
+        for(auto it = node1->adjNodes.first.begin();it != node1->adjNodes.first.end();++it,++it2){
+            if((*it)->label == tolabel && *it2 == weight){
+                Edge edge;
+                edge.label1 = fromlabel;
+                edge.label2 = tolabel;
+                edge.weight = weight;
+                return edge;
+            }
+        }
+
+
     }
 };

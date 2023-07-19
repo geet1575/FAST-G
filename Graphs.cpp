@@ -42,8 +42,8 @@ int main() {
     // DirectedGraph directedgraph;
     // directedgraph.InputDirectedGraph();
 
-    DirectedWeightedGraph directedweightedgraph;
-    directedweightedgraph.InputDirectedGraph();
-    directedweightedgraph.Dijkstra();
+    // DirectedWeightedGraph directedweightedgraph;
+    // directedweightedgraph.InputDirectedGraph();
+    // directedweightedgraph.Dijkstra();
     return 0;
 }
