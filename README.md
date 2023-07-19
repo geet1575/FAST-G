@@ -1,12 +1,11 @@
 # FAST-G
 This library contains implementations of various Graph Optimization and Search algorithms in C++. This project is under the Seasons of Code Initiative by the Web n Coding Club, IIT Bombay.
 
-# STUFF THAT IS COMPLETED
-The files named 'Graphs' (and their various extensions) contain all the basic implementations of graphs 
+# How to use these files 
+The steps to use these files are as follows :  
+g++ -Graphs.hpp  
+g++ -I Graphs.cpp  (Note that it is a capital i)  
+./a.out  
 
-# TO DO 
-To implement MST algorithms, Djikastra's etc.
-
-# COMMENTS
-I personally don't like the fact that my 'nodes' object in the graph base class is a vector that consists of pointers to all the nodes. 
-So, keep this in mind before using the file
+# Issues (hopefully to-be rectified soon)
+Right now, the code is having compilation issues relating to the use of deleted constructors
