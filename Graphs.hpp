@@ -657,6 +657,8 @@ public:
         std::swap(*it, nodes[0]);
     }
     }
+
+    // Network flow algorithm
     int findMaxFlow(int sourceLabel, int sinkLabel) {
         Node* source = findOrCreateNode(sourceLabel);
         Node* sink = findOrCreateNode(sinkLabel);
@@ -667,7 +669,6 @@ public:
         }
 
         int maxFlow = 0;
-
         while (bfs(source, sink)) {
             std::vector<int> parent(nodes.size(), -1);
             int pathFlow = INT_MAX;
@@ -1227,11 +1228,6 @@ public:
 
         std::cout << std::endl;
     }
-
-    // Ford Fulkerson's algorithm
-    void FordFulkerson(){
-
-    } 
 
     // Function to perform depth-first search (DFS) traversal
     void depthFirstSearch() {

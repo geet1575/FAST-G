@@ -4,7 +4,8 @@
 - Added Dijkstra's and Kruskal's algorithms
 - Added APSP and Network Flow algorithms 
 
+- Implemented a project to find a perfect matching of minimum weight in a bipartite graph using the Hungarian Algorithm  
+
 # To Do  
 
-- Fix the compilation errors 
-- Read up on perfect matchings and blossom's algorithm 
+- Fix the compilation errors in undirected weighted graph
